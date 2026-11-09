@@ -1,0 +1,27 @@
+Kernel Browser: Freeze navigator.webdriver to false always
+
+This patch forces navigator.webdriver to always return false,
+matching the behavior of a real non-automated browser.
+
+Bot detection services like Cloudflare and DataDome check this
+property - a value of true indicates automation and triggers blocks.
+
+--- a/third_party/blink/renderer/core/frame/navigator.cc
++++ b/third_party/blink/renderer/core/frame/navigator.cc
+@@ -98,14 +98,8 @@ bool Navigator::cookieEnabled() const {
+   return cookie_enabled;
+ }
+ 
+-bool Navigator::webdriver() const {
+-  if (RuntimeEnabledFeatures::AutomationControlledEnabled())
+-    return true;
+-
+-  bool automation_enabled = false;
+-  probe::ApplyAutomationOverride(GetExecutionContext(), automation_enabled);
+-  return automation_enabled;
+-}
++// KERNEL: Always return false to match non-automated browser behavior
++bool Navigator::webdriver() const { return false; }
+ 
+ String Navigator::GetAcceptLanguages() {
+   if (!DomWindow())
